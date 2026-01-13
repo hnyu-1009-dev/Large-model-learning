@@ -6,6 +6,22 @@ from sklearn.model_selection import train_test_split
 import config
 
 
+def build_dataset(sentences, word2index, describe: str):
+    indexed_sentences = [
+        [word2index.get(token, 0) for token in jieba.lcut(sentence)] for sentence in sentences
+    ]
+
+    dataset = []
+    # [ {'input':[1,2,3,4,5],'target':5}, {'input':[2,3,4,5，6],'target':7} ]
+    for sentence in tqdm(indexed_sentences, desc=f'{describe}构建数据集'):
+        for i in range(len(sentence) - config.SEQ_LEN):
+            input = sentence[i:i + config.SEQ_LEN]
+            target = sentence[i + config.SEQ_LEN]
+            dataset.append({'input': input, 'target': target})
+    print(dataset[0:3])
+    return dataset
+
+
 def process():
     print("开始处理数据")
     # 1.读取文件
@@ -29,6 +45,7 @@ def process():
 
     # 4.构建词表
     vocab_set = set()
+    # tqdm用于长内容加载时的进度条
     for sentence in tqdm(train_sentences, desc='构建词表'):
         # 使用set去重，但是无法保证有序
         vocab_set.update(jieba.lcut(sentence))
@@ -44,9 +61,22 @@ def process():
         print("数据处理完成")
 
     # 6.构建训练集
+    word2index = {word: index for index, word in enumerate(vocab_list)}
 
+    train_dataset = build_dataset(train_sentences, word2index, 'train_dataset')
 
     # 7.保存训练集
+    pd.DataFrame(train_dataset).to_json(
+        config.PROCESSED_DATA_DIR / 'train.jsonl', orient='records', lines=True
+    )
+
+    # 8.构建测试集
+    test_dataset = build_dataset(test_sentences, word2index, 'test_dataset')
+
+    # 9.保存测试集
+    pd.DataFrame(test_dataset).to_json(
+        config.PROCESSED_DATA_DIR / 'test.jsonl', orient='records', lines=True
+    )
 
 
 if __name__ == '__main__':

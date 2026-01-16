@@ -6,6 +6,25 @@ import jieba
 from model import InputMethodModel
 
 
+def predict_batch(model, inputs):
+    """
+    批量预测
+    :param model: 模型
+    :param inputs: 输入：shape [batch_size,seq_len]
+    :return: 预测结果，shape[batch_size,5]
+    """
+    model.eval()
+    with torch.no_grad():
+        output = model(inputs)
+        # output.shape:[batch_size, vocab_size]
+    top5_indexes = torch.topk(output, k=5).indices  # dim默认维度为-1，即选取最后一维vocab_size，每次从vocab_size这一维度中选取数值
+    # top5_indexes.shape :[batch_size,5]
+
+    top5_indexes_list = top5_indexes.tolist()
+
+    return top5_indexes_list
+
+
 def predict(text, model, device, word2index, index2word):
     # 4.处理输入
     tokens = jieba.lcut(text)
@@ -13,14 +32,7 @@ def predict(text, model, device, word2index, index2word):
     input_tensor = torch.tensor([indexes], dtype=torch.long).to(device)
 
     # 5.预测逻辑
-    model.eval()
-    with torch.no_grad():
-        output = model(input_tensor)
-        # output.shape:[batch_size, vocab_size]
-    top5_indexes = torch.topk(output, k=5).indices  # dim默认维度为-1，即选取最后一维vocab_size，每次从vocab_size这一维度中选取数值
-    # top5_indexes.shape :[batch_size,5]
-
-    top5_indexes_list = top5_indexes.tolist()
+    top5_indexes_list = predict_batch(model, input_tensor)
     top5_tokens = [index2word[index] for index in top5_indexes_list[0]]
     return top5_tokens
 

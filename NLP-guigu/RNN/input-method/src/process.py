@@ -2,14 +2,12 @@ import jieba
 import pandas as pd
 from datasets import tqdm
 from sklearn.model_selection import train_test_split
-
+from tokenizer import JiebaTokenizer
 import config
 
 
-def build_dataset(sentences, word2index, describe: str):
-    indexed_sentences = [
-        [word2index.get(token, 0) for token in jieba.lcut(sentence)] for sentence in sentences
-    ]
+def build_dataset(sentences, tokenizer, describe: str):
+    indexed_sentences = [tokenizer.encode(sentence) for sentence in sentences]
 
     dataset = []
     # [ {'input':[1,2,3,4,5],'target':5}, {'input':[2,3,4,5，6],'target':7} ]
@@ -44,26 +42,11 @@ def process():
     train_sentences, test_sentences = train_test_split(sentences, test_size=0.2, random_state=42)
 
     # 4.构建词表
-    vocab_set = set()
-    # tqdm用于长内容加载时的进度条
-    for sentence in tqdm(train_sentences, desc='构建词表'):
-        # 使用set去重，但是无法保证有序
-        vocab_set.update(jieba.lcut(sentence))
+    JiebaTokenizer.build_vocab(train_sentences, config.MODELS_DIR / 'vocab.txt')
 
-    # 转化成list，就可以让数据有序，同时set无法通过索引便利
-    vocab_list = ['<unk>'] + list(vocab_set)
-    print(f"此表大小{len(vocab_list)}")
-    print(vocab_list[0:10])
-    # 5.保存词表
-    with open(config.MODELS_DIR / 'vocab.txt', 'w', encoding='utf-8') as f:
-        f.write('\n'.join(vocab_list))
-
-        print("数据处理完成")
-
+    tokenizer = JiebaTokenizer.from_vocab(config.MODELS_DIR / 'vocab.txt')
     # 6.构建训练集
-    word2index = {word: index for index, word in enumerate(vocab_list)}
-
-    train_dataset = build_dataset(train_sentences, word2index, 'train_dataset')
+    train_dataset = build_dataset(train_sentences, tokenizer, 'train_dataset')
 
     # 7.保存训练集
     pd.DataFrame(train_dataset).to_json(
@@ -71,7 +54,7 @@ def process():
     )
 
     # 8.构建测试集
-    test_dataset = build_dataset(test_sentences, word2index, 'test_dataset')
+    test_dataset = build_dataset(test_sentences, tokenizer, 'test_dataset')
 
     # 9.保存测试集
     pd.DataFrame(test_dataset).to_json(

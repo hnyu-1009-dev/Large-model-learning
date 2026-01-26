@@ -3,8 +3,9 @@ from sympy.codegen.fnodes import cmplx
 
 import config
 import jieba
-from model import InputMethodModel
+from model import ReviewAnalyzeModel
 from tokenizer import JiebaTokenizer
+
 
 def predict_batch(model, inputs):
     """
@@ -16,18 +17,13 @@ def predict_batch(model, inputs):
     model.eval()
     with torch.no_grad():
         output = model(inputs)
-        # output.shape:[batch_size, vocab_size]
-    top5_indexes = torch.topk(output, k=5).indices  # dim默认维度为-1，即选取最后一维vocab_size，每次从vocab_size这一维度中选取数值
-    # top5_indexes.shape :[batch_size,5]
-
-    top5_indexes_list = top5_indexes.tolist()
-
-    return top5_indexes_list
+        # output.shape:[batch_size]
+        batch_result = torch.sigmoid(output)
+    return batch_result
 
 
 def predict(text, model, device, tokenizer):
     # 4.处理输入
-    tokens = jieba.lcut(text)
     indexes = tokenizer.encode(text)
     input_tensor = torch.tensor([indexes], dtype=torch.long).to(device)
 
@@ -48,21 +44,21 @@ def run_predict():
     tokenizer = JiebaTokenizer.from_vocab(config.MODELS_DIR / "vocab.txt")
 
     # 3.模型
-    model = InputMethodModel(vocab_size=tokenizer.vocab_size).to(device)
+    model = ReviewAnalyzeModel(vocab_size=tokenizer.vocab_size).to(device)
     model.load_state_dict(torch.load((config.MODELS_DIR / 'best.pth')))
-    print("hello(输入q或quit退出)")
+    print("欢迎使用情感分析模型(输入q或quit退出)")
     while True:
         user_input = input("》输入。。。")
-        input_history = ''
         if user_input in ['q', 'quit']:
             break
         if user_input.strip() == '':
             print("hello")
             continue
-        input_history += user_input
-        print(f'输入历史：{input_history}')
-        top5_tokens = predict(input_history, model, device, tokenizer)
-        print(f'预测结果：{top5_tokens}')
+        result = predict(user_input, model, device, tokenizer)
+        if result > 0.5:
+            print("正向")
+        else:
+            print("负向")
 
 
 if __name__ == '__main__':

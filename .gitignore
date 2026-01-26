@@ -2,3 +2,4 @@
 /.gitignore/
 /NLP-guigu/TextRepresentation/data/
 /NLP-guigu/RNN/input-method/data/
+/NLP-guigu/LSTM/review-analyze-lstm/data/

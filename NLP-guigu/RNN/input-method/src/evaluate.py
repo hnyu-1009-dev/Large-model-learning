@@ -3,7 +3,7 @@ import torch
 from model import InputMethodModel
 from dataset import get_dataloader
 from predict import predict_batch
-
+from tokenizer import JiebaTokenizer
 
 def evaluate(model, test_dataloader, device):
     top1_acc_count = 0
@@ -35,14 +35,10 @@ def run_evaluate():
     )
 
     # 2.词表
-    with open(config.MODELS_DIR / 'vocab.txt', encoding='utf-8') as f:
-        # 一次读取一行，但会读入\n
-        vocab_list = [line.strip() for line in f.readlines()]
-    word2index = {word: index for index, word in enumerate(vocab_list)}
-    index2word = {index: word for index, word in enumerate(vocab_list)}
+    tokenizer = JiebaTokenizer.from_vocab(config.MODELS_DIR / "vocab.txt")
 
     # 3.模型
-    model = InputMethodModel(vocab_size=len(vocab_list)).to(device)
+    model = InputMethodModel(vocab_size=tokenizer.vocab_size).to(device)
     model.load_state_dict(torch.load((config.MODELS_DIR / 'best.pth')))
 
     # 4.数据集

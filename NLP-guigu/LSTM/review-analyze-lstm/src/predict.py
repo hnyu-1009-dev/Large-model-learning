@@ -19,18 +19,19 @@ def predict_batch(model, inputs):
         output = model(inputs)
         # output.shape:[batch_size]
         batch_result = torch.sigmoid(output)
-    return batch_result
+    return batch_result.tolist()
 
 
 def predict(text, model, device, tokenizer):
+
+
     # 4.处理输入
-    indexes = tokenizer.encode(text)
+    indexes = tokenizer.encode(text, seq_len=config.SEQ_LEN)
     input_tensor = torch.tensor([indexes], dtype=torch.long).to(device)
 
     # 5.预测逻辑
-    top5_indexes_list = predict_batch(model, input_tensor)
-    top5_tokens = [tokenizer.index2word[index] for index in top5_indexes_list[0]]
-    return top5_tokens
+    batch_result = predict_batch(model, input_tensor)
+    return batch_result[0]
 
 
 def run_predict():
@@ -44,8 +45,11 @@ def run_predict():
     tokenizer = JiebaTokenizer.from_vocab(config.MODELS_DIR / "vocab.txt")
 
     # 3.模型
-    model = ReviewAnalyzeModel(vocab_size=tokenizer.vocab_size).to(device)
-    model.load_state_dict(torch.load((config.MODELS_DIR / 'best.pth')))
+    model = ReviewAnalyzeModel(
+        vocab_size=tokenizer.vocab_size,
+        padding_index=tokenizer.pad_token_index
+    ).to(device)
+    model.load_state_dict(torch.load((config.MODELS_DIR / 'best.pt')))
     print("欢迎使用情感分析模型(输入q或quit退出)")
     while True:
         user_input = input("》输入。。。")
@@ -56,9 +60,9 @@ def run_predict():
             continue
         result = predict(user_input, model, device, tokenizer)
         if result > 0.5:
-            print("正向")
+            print(f"正向(置信度：{result})")
         else:
-            print("负向")
+            print(f"负向(置信度：{1 - result}")
 
 
 if __name__ == '__main__':

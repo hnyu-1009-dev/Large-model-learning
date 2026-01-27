@@ -48,7 +48,7 @@ def train():
     )
     # 7.TensorBoard Writer
     writer = SummaryWriter(
-        log_dir=config.LOGS_DIR / time.strftime('%Y-%m-%d_%H-%M-%S')
+        log_dir=config.LOGS_DIR /time.strftime("%Y-%M-%D_%H-%M-%S")
     )
     best_loss = float('inf')
     for epoch in range(1, config.EPOCHS + 1):
@@ -64,7 +64,7 @@ def train():
             best_loss = loss
             torch.save(
                 model.state_dict(),
-                config.MODELS_DIR / 'best.pth',
+                config.MODELS_DIR / 'best.pt',
             )
             print("模型保存成功")
 

@@ -3,3 +3,13 @@
 /NLP-guigu/TextRepresentation/data/
 /NLP-guigu/RNN/input-method/data/
 /NLP-guigu/LSTM/review-analyze-lstm/data/
+/NLP-guigu/GRU/review-analyze-gru/data/
+LangChain-tutorial/尚硅谷-课件/01-LangChain使用概述.pdf
+LangChain-tutorial/尚硅谷-课件/02-LangChain使用之Model IO.pdf
+LangChain-tutorial/尚硅谷-课件/03-LangChain使用之Chains.pdf
+LangChain-tutorial/尚硅谷-课件/04-LangChain使用之Memory.pdf
+LangChain-tutorial/尚硅谷-课件/05-LangChain使用之Tools.pdf
+LangChain-tutorial/尚硅谷-课件/06-LangChain使用之Agents.pdf
+LangChain-tutorial/尚硅谷-课件/07-LangChain使用之Retrieval.pdf
+/LangChain-tutorial/chapter02-model IO/.env
+/LangChain-tutorial/尚硅谷-课件/

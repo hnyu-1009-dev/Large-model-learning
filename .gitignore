@@ -1,4 +1,5 @@
 /Data/
+/.idea
 /.gitignore/
 /NLP-guigu/TextRepresentation/data/
 /NLP-guigu/RNN/input-method/data/
@@ -20,5 +21,5 @@ LangChain-tutorial/尚硅谷-课件/07-LangChain使用之Retrieval.pdf
 /MCP/mcp-project/.env
 /LangChain-tutorial/chapter06-agents/AgentModel/.env
 skills/OpenCode/skills-main
-/.gitignore
 
+/.vscode/
